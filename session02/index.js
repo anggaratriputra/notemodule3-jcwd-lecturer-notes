@@ -1,6 +1,6 @@
-import express from "express";
-// import router from "./router.js";
-import { createNewUsers, getUsersData } from "./db.js";
+const express = require("express");
+// const router = require("./router");
+const { createNewUsers, getUsersData } = require("./db");
 
 const PORT = 8000;
 
