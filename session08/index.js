@@ -1,61 +1,26 @@
-const { User, Product } = require("./models");
-const { Op } = require("sequelize");
+const express = require("express");
+const PORT = 8000;
 
-async function create() {
-  const result = await User.bulkCreate([
-    {
-      username: "jaka",
-      email: "jaka@mail.com",
-      password: "gembung123!",
-      name: "Jaka Tarub",
-    },
-  ]);
-  console.log(result.get({ plain: true }));
-  return;
-}
+const userRouter = require("./router/user");
 
-async function getAll() {
-  const result = await User.findAll({
-    attributes: {
-      exclude: ["password"],
-    },
-    where: {
-      username: {
-        [Op.like]: "%%",
-      },
-    },
-    raw: true,
-  });
-  console.log(result);
-  return;
-}
+const app = express();
+app.use(express.json());
+app.use("/user", userRouter);
 
-async function update() {
-  const user = await User.findOne({
-    where: {
-      username: "jaka",
-    },
-  });
-  user.name = "Jaak Rutab";
-  console.log(user);
-  await user.save();
-  return;
-}
+app.get("/", (req, res) => {
+  res.send("session 08 API");
+});
 
-async function deleteData() {
-  const result = await User.destroy({
-    where: {
-      id: 3,
-    },
-  });
-  console.log(result);
-  return;
-}
+// 404 middleware
+app.use((req, res, next) => {
+  res.status(404).send("not found bro!");
+});
 
-// relationship
-async function getUserWithProduct() {
-  const user = await User.findOne({ where: { id: 1 }, include: Product });
-  console.log(user.get({ plain: true }));
-}
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(500).send("Something is wrong!");
+});
 
-getUserWithProduct();
+app.listen(PORT, () => {
+  console.log(`API start on port: ${PORT}`);
+});
