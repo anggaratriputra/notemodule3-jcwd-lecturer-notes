@@ -1,0 +1,36 @@
+const express = require("express");
+const PORT = 8080;
+
+const app = express();
+app.use(express.json());
+
+const authRouter = require("./routes/auth");
+// register routing
+app.get("/", (req, res) => {
+  res.send("Belajar Auth & Rest API");
+});
+app.use("/auth", authRouter);
+
+// 404 middleware
+app.use((req, res) => {
+  console.log(`404: ${req.path}`);
+
+  res.status(404).send({
+    ok: false,
+    message: "Route not found",
+  });
+});
+
+// error handler middleware
+app.use((error, req, res, next) => {
+  console.log(`FATAL ERROR: ${String(error)}`);
+  res.status(500).send({
+    ok: false,
+    message: "FATAL ERROR",
+    error,
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`app start on port ${PORT}`);
+});
