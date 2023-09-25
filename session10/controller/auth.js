@@ -1,6 +1,9 @@
 const { Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const { User } = require("../models");
+
+const SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 exports.handleRegister = async (req, res) => {
   const { username, email, password } = req.body;
@@ -49,8 +52,60 @@ exports.handleLogin = async (req, res) => {
     return;
   }
 
+  const payload = { id: user.id, isAdmin: user.isAdmin };
+  const token = jwt.sign(payload, SECRET_KEY, {
+    expiresIn: "1h",
+  });
+  const refreshToken = jwt.sign(payload, SECRET_KEY, {
+    expiresIn: "7d",
+  });
+
   res.json({
     ok: true,
-    data: user,
+    data: {
+      token,
+      refreshToken,
+      profile: {
+        email: user.email,
+        username: user.username,
+      },
+    },
   });
+};
+
+exports.handleRefreshToken = async (req, res) => {
+  const id = req.user.id;
+
+  try {
+    const user = await User.findOne({
+      where: {
+        id,
+      },
+    });
+
+    const payload = { id: user.id, isAdmin: user.isAdmin };
+    const token = jwt.sign(payload, SECRET_KEY, {
+      expiresIn: "1h",
+    });
+    const refreshToken = jwt.sign(payload, SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    res.json({
+      ok: true,
+      data: {
+        token,
+        refreshToken,
+        profile: {
+          email: user.email,
+          username: user.username,
+        },
+      },
+    });
+  } catch (error) {
+    res.status(401).json({
+      ok: false,
+      message: String(error),
+    });
+  }
 };

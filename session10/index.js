@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const PORT = 8080;
 
@@ -5,11 +6,13 @@ const app = express();
 app.use(express.json());
 
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
 // register routing
 app.get("/", (req, res) => {
   res.send("Belajar Auth & Rest API");
 });
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
 
 // 404 middleware
 app.use((req, res) => {
