@@ -1,7 +1,10 @@
 const bcrypt = require("bcryptjs");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
+const hbs = require("handlebars");
+const fs = require("fs");
 const { Account, Profile } = require("../models");
+const mailer = require("../lib/nodemailer");
 
 const JWT_SECRET_KEY = "ntar-pindah-ke-env";
 
@@ -24,6 +27,21 @@ exports.handleRegister = async (req, res) => {
       lastName,
       firstName,
       accountId: result.id,
+    });
+
+    const templateRaw = fs.readFileSync(
+      __dirname + "/../templates/register.html",
+      "utf-8"
+    );
+    const templateCompile = hbs.compile(templateRaw);
+    const emailHTML = templateCompile({
+      firstName: profile.firstName,
+    });
+    const resultEmail = await mailer.sendMail({
+      to: result.email,
+      from: "beautifulsicknes@gmail.com",
+      subject: "Registrasi akun socia-app berhasil",
+      html: emailHTML,
     });
 
     res.json({
@@ -53,7 +71,6 @@ exports.handleLogin = async (req, res) => {
         [Op.or]: {
           email: userIdentity,
           username: userIdentity,
-          password: userIdentity,
         },
       },
       include: Profile,
@@ -149,5 +166,31 @@ exports.updateProfile = async (req, res) => {
       message: String(error),
     });
     return;
+  }
+};
+
+exports.handleUploadPhotoProfile = async (req, res) => {
+  const { filename } = req.file;
+  const { id: accountId } = req.user;
+
+  try {
+    const profile = await Profile.findOne({ where: { accountId } });
+    if (profile.profilePicture) {
+      // delete old profile picture
+      fs.rmSync(__dirname + "/../public/" + profile.profilePicture);
+    }
+
+    profile.profilePicture = filename;
+    await profile.save();
+
+    res.json({
+      ok: true,
+      data: "Profile picture updated",
+    });
+  } catch (error) {
+    res.status(500).json({
+      ok: false,
+      message: String(error),
+    });
   }
 };

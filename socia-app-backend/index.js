@@ -8,6 +8,9 @@ const authRouter = require("./routes/auth");
 // routes
 app.use("/auth", authRouter);
 
+// static file serving
+app.use("/public", express.static(__dirname + "/public"));
+
 // middleware 404
 app.use((req, res) => {
   console.error(`Not found: ${req.path}`);
