@@ -1,0 +1,36 @@
+version: "3.8"
+
+networks:
+  compose-socia-mysql-network:
+    name: compose-socia-mysql-network
+
+services:
+  mysqlserver:
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=compose-socia-app
+      - MYSQL_USER=sociaApp
+      - MYSQL_PASS=sociaApp
+      - MYSQL_ROOT_PASSWORD=root
+    networks:
+      - compose-socia-mysql-network
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - mysqlserver
+    ports:
+      - 4000:8000
+    volumes:
+      - /home/ridho/socia-app-public:/app/public
+    networks:
+      - compose-socia-mysql-network
+    environment:
+      - JWT_SECRET_KEY=;ksjdlakjsdlaskjd
+      - DB_NAME=compose-socia-app
+      - DB_USER=root
+      - DB_PASS=root
+      - DB_HOST=mysqlserver
+      - SMTP_USER=beautifulsicknes@gmail.com
+      - SMTP_PASS="pygi idar cvyj rskf"
