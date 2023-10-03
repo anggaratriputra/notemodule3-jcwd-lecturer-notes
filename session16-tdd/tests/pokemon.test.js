@@ -23,4 +23,12 @@ describe("GET /api/pokemons", () => {
     expect(response.status).toBe(200);
     expect(response.body).toEqual(mockResponse.results);
   });
+
+  it("should return errors when pokemon api is error", async () => {
+    nock("https://pokeapi.co").get("/api/v2/pokemon").reply(403, {});
+
+    const response = await request(app).get("/api/pokemons");
+    expect(response.status).toBe(500);
+    expect(response.text).toEqual("An error occured when fetching pokemons");
+  });
 });

@@ -17,6 +17,15 @@ describe("GET /api/users", () => {
     expect(response.body).toEqual(users);
   });
 
+  it("should return empty users", async () => {
+    const users = [];
+    User.findAll.mockResolvedValue(users);
+
+    const response = await request(app).get("/api/users");
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(users);
+  });
+
   it("should return error when getting users is failed", async () => {
     User.findAll.mockRejectedValue(new Error("database failed"));
 
